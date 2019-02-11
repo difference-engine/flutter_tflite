@@ -71,7 +71,7 @@ public class TflitePlugin implements MethodCallHandler {
       }
     } else if (call.method.equals("runModelOnBinary")) {
       try {
-        List<Map<String, Object>> res = runModelOnBinary((HashMap) call.arguments);
+        Object res = runModelOnBinary((HashMap) call.arguments);
         result.success(res);
       }
       catch (Exception e) {
@@ -160,6 +160,18 @@ public class TflitePlugin implements MethodCallHandler {
     return recognitions;
   }
 
+  private ArrayList<ArrayList<Float>> GetRawEmbeddings() {
+    final ArrayList<ArrayList<Float>> recognitions = new ArrayList<ArrayList<Float>>(labelProb.length);
+    for (int i = 0; i < labelProb.length; i++) {
+      recognitions.add(new ArrayList<Float>());
+      for (int j = 0; j < labelProb[0].length; j++) {
+        recognitions.get(i).add(labelProb[i][j]);
+      }
+    }
+
+    return recognitions;
+  }
+
   ByteBuffer feedInputTensorImage(String path, float mean, float std) throws IOException {
     Tensor tensor = tfLite.getInputTensor(0);
     inputSize = tensor.shape()[1];
@@ -215,16 +227,21 @@ public class TflitePlugin implements MethodCallHandler {
     return GetTopN(NUM_RESULTS, THRESHOLD);
   }
 
-  private List<Map<String, Object>> runModelOnBinary(HashMap args) throws IOException {
+  private Object runModelOnBinary(HashMap args) throws IOException {
     byte[] binary = (byte[])args.get("binary");
     int NUM_RESULTS = (int)args.get("numResults");
     double threshold = (double)args.get("threshold");
+    boolean raw = (boolean)args.get("raw");
     float THRESHOLD = (float)threshold;
 
     ByteBuffer imgData = ByteBuffer.wrap(binary);
     tfLite.run(imgData, labelProb);
 
-    return GetTopN(NUM_RESULTS, THRESHOLD);
+    if (raw == false) {
+      return GetTopN(NUM_RESULTS, THRESHOLD);
+    } else {
+      return GetRawEmbeddings();
+    }
   }
 
   private List<Map<String, Object>> detectObjectOnImage(HashMap args) throws IOException {
