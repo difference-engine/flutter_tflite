@@ -38,10 +38,11 @@ class Tflite {
   static Future<List> runModelOnBinary(
       {@required Uint8List binary,
       int numResults = 5,
-      double threshold = 0.1}) async {
+      double threshold = 0.1,
+      bool raw = false}) async {
     return await _channel.invokeMethod(
       'runModelOnBinary',
-      {"binary": binary, "numResults": numResults, "threshold": threshold},
+      {"binary": binary, "numResults": numResults, "threshold": threshold, "raw": raw},
     );
   }
 
