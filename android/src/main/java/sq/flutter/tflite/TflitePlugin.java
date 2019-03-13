@@ -235,11 +235,14 @@ public class TflitePlugin implements MethodCallHandler {
     float THRESHOLD = (float)threshold;
 
     ByteBuffer imgData = ByteBuffer.wrap(binary);
-    tfLite.run(imgData, labelProb);
+    
 
     if (raw == false) {
+      tfLite.run(imgData, labelProb);
       return GetTopN(NUM_RESULTS, THRESHOLD);
     } else {
+      labelProb = new float[1][NUM_RESULTS];
+      tfLite.run(imgData, labelProb);
       return GetRawEmbeddings();
     }
   }
