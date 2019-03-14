@@ -230,6 +230,8 @@ public class TflitePlugin implements MethodCallHandler {
   private Object runModelOnBinary(HashMap args) throws IOException {
     byte[] binary = (byte[])args.get("binary");
     int NUM_RESULTS = (int)args.get("numResults");
+    ArrayList<Integer> OUTPUT_SHAPE = args.get("outputShape");
+    
     double threshold = (double)args.get("threshold");
     boolean raw = (boolean)args.get("raw");
     float THRESHOLD = (float)threshold;
@@ -241,7 +243,15 @@ public class TflitePlugin implements MethodCallHandler {
       tfLite.run(imgData, labelProb);
       return GetTopN(NUM_RESULTS, THRESHOLD);
     } else {
-      labelProb = new float[1][NUM_RESULTS];
+      if (OUTPUT_SHAPE.size() == 0) {
+        labelProb = new float[1][NUM_RESULTS];
+      } else if (OUTPUT_SHAPE.size() == 1) {
+        labelProb = new float[1][OUTPUT_SHAPE.get(0)];
+      } else if (OUTPUT_SHAPE.size() == 2) {
+        labelProb = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)];
+      } else if (OUTPUT_SHAPE.size() == 3) {
+        labelProb = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)][OUTPUT_SHAPE.get(2)];
+      }
       tfLite.run(imgData, labelProb);
       return GetRawEmbeddings();
     }
