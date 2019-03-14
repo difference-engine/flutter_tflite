@@ -230,7 +230,7 @@ public class TflitePlugin implements MethodCallHandler {
   private Object runModelOnBinary(HashMap args) throws IOException {
     byte[] binary = (byte[])args.get("binary");
     int NUM_RESULTS = (int)args.get("numResults");
-    ArrayList<Integer> OUTPUT_SHAPE = args.get("outputShape");
+    ArrayList<Integer> OUTPUT_SHAPE = (ArrayList<Integer>)args.get("outputShape");
     
     double threshold = (double)args.get("threshold");
     boolean raw = (boolean)args.get("raw");
