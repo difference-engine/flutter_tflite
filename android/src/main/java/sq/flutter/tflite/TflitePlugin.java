@@ -160,12 +160,48 @@ public class TflitePlugin implements MethodCallHandler {
     return recognitions;
   }
 
-  private ArrayList<ArrayList<Float>> GetRawEmbeddings() {
+  private ArrayList GetRawEmbeddings() {
     final ArrayList<ArrayList<Float>> recognitions = new ArrayList<ArrayList<Float>>(labelProb.length);
     for (int i = 0; i < labelProb.length; i++) {
       recognitions.add(new ArrayList<Float>());
-      for (int j = 0; j < labelProb[0].length; j++) {
+      for (int j = 0; j < labelProb[i].length; j++) {
         recognitions.get(i).add(labelProb[i][j]);
+      }
+    }
+
+    return recognitions;
+  }
+
+  private ArrayList GetRawEmbeddings(float[] labelProb) {
+    final ArrayList<Float> recognitions = new ArrayList<Float>(labelProb.length);
+    for (int i = 0; i < labelProb.length; i++) {
+      recognitions.add(labelProb[i]);
+    }
+
+    return recognitions;
+  }
+
+  private ArrayList GetRawEmbeddings(float[][] labelProb) {
+    final ArrayList<ArrayList<Float>> recognitions = new ArrayList<ArrayList<Float>>(labelProb.length);
+    for (int i = 0; i < labelProb.length; i++) {
+      recognitions.add(new ArrayList<Float>(labelProb[i].length));
+      for (int j = 0; j < labelProb[i].length; j++) {
+        recognitions.get(i).add(labelProb[i][j]);
+      }
+    }
+
+    return recognitions;
+  }
+
+  private ArrayList GetRawEmbeddings(float[][][] labelProb) {
+    final ArrayList<ArrayList<ArrayList<Float>>> recognitions = new ArrayList<ArrayList<ArrayList<Float>>>(labelProb.length);
+    for (int i = 0; i < labelProb.length; i++) {
+      recognitions.add(new ArrayList<ArrayList<Float>>(labelProb[i].length));
+      for (int j = 0; j < labelProb[i].length; j++) {
+        recognitions.get(i).add(new ArrayList<Float>(labelProb[i][j].length));
+        for (int k = 0; k < labelProb[i][j].length; k++) {
+          recognitions.get(i).get(j).add(labelProb[i][j][k]);
+        }
       }
     }
 
@@ -244,16 +280,29 @@ public class TflitePlugin implements MethodCallHandler {
       return GetTopN(NUM_RESULTS, THRESHOLD);
     } else {
       if (OUTPUT_SHAPE.size() == 0) {
-        labelProb = new float[1][NUM_RESULTS];
+        float[][] labelProbTemp = new float[1][NUM_RESULTS];
+        tfLite.run(imgData, labelProbTemp);
+        
+        return GetRawEmbeddings(labelProbTemp[0]);
       } else if (OUTPUT_SHAPE.size() == 1) {
-        labelProb = new float[1][OUTPUT_SHAPE.get(0)];
+        float[][] labelProbTemp = new float[1][OUTPUT_SHAPE.get(0)];
+        tfLite.run(imgData, labelProbTemp);
+        
+        return GetRawEmbeddings(labelProbTemp[0]);
       } else if (OUTPUT_SHAPE.size() == 2) {
-        labelProb = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)];
+        float[][][] labelProbTemp = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)];
+        tfLite.run(imgData, labelProbTemp);
+        
+        return GetRawEmbeddings(labelProbTemp[0]);
       } else if (OUTPUT_SHAPE.size() == 3) {
-        labelProb = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)][OUTPUT_SHAPE.get(2)];
+        float[][][][] labelProbTemp = new float[1][OUTPUT_SHAPE.get(0)][OUTPUT_SHAPE.get(1)][OUTPUT_SHAPE.get(2)];
+        tfLite.run(imgData, labelProbTemp);
+        
+        return GetRawEmbeddings(labelProbTemp[0]);
       }
-      tfLite.run(imgData, labelProb);
+      
       return GetRawEmbeddings();
+      
     }
   }
 
