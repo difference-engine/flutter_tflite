@@ -39,7 +39,7 @@ class Tflite {
       {@required Uint8List binary,
       int numResults = 5,
       double threshold = 0.1,
-      List<int> outputShape = [],
+      List<int> outputShape = const [],
       bool raw = false}) async {
     return await _channel.invokeMethod(
       'runModelOnBinary',
